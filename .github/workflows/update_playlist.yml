@@ -1,0 +1,32 @@
+name: Update IPTV Playlist
+
+on:
+  schedule:
+    - cron: '0 4 * * *' # Запуск каждый день в 04:00 UTC (09:00 по Таджикистану / 07:00 по Москве)
+  workflow_dispatch: # Позволяет запускать вручную через сайт GitHub
+
+permissions:
+  contents: write
+
+jobs:
+  update-playlist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверка репозитория
+        uses: actions/checkout@v4
+
+      - name: Настройка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Запуск скрипта слияния
+        run: python merge.py
+
+      - name: Сохранение изменений в GitHub
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add merged_playlist.m3u
+          git commit -m "Auto-update IPTV playlist [skip ci]" || echo "No changes to commit"
+          git push
